@@ -1,0 +1,34 @@
+Your task is to extract all numeric cells that represent the performance of any alignment method trained using preference-based methods for aligning large language models. These include, but are not limited to, Direct Preference Optimization (DPO), Kahneman-Tversky Optimization (KTO), Implicit Preference Optimization (IPO), Generalized Preference Optimization (GPO), Relative Preference Optimization (RPO), Odds Ratio Preference Optimization (ORPO), Iterative Reasoning Preference Optimization (IRPO), or other methods that directly optimize models based on human preferences.
+
+Do not extract results for alignment techniques that do not use preference-based methods, such as reward modeling without preference data.
+
+You must also exclude results that:
+- Use the model only as an evaluator or generator in experiments unrelated to preference alignment.
+- Include variants or ensembles of preference-tuning methods unless the core optimization still relies on preference signals. Variants should be mentioned in hyperparameters.
+
+If you find multiple valid numeric cells for different methods, extract each in a separate template instance and return as a list of templates
+
+Use the following template for each extracted result (output only the filled templates, with no extra text or explanation):
+
+Template:  
+{"value": "xx", "metric": "xx", "evaluation_method": "xx", "benchmark_or_task": "xx", "dataset": "xx", "dataset_citation_tag": "xx", "subset": "xx", "base_model": "xx", "pref_tuning_method": "xx", "hyperparameters": "xx", "PEFT": "xx"}
+
+- value: The numeric performance result (e.g., accuracy, win rate, score).  
+- metric: The name of the metric used (e.g., Accuracy, Elo, Win rate, MT-Bench score).  
+- evaluation_method: The evaluation setup (e.g., pairwise human eval, GPT-4 judge, MT-Bench, AlpacaEval).  
+- benchmark_or_task: The name of the benchmark, challenge, or suite (e.g., MT-Bench, Arena-Hard, AlpacaEval).  
+- dataset: The proper noun name of the dataset used for training or evaluation. If multiple are involved, choose the one most directly associated with the result.  
+- dataset_citation_tag: BibTeX citation tag (if available) or arXiv ID.  
+- subset: Any subset/domain/task used (e.g., Helpful, Harmless, Coding, Reasoning, Instruct, Tool-Use). Leave as "xx" if unspecified.  
+- base_model: The pretrained base model being aligned (e.g., LLaMA-2-7B, Mistral, GPT-J).  
+- pref_tuning_method: The preference tuning method (e.g., DPO, IPO, GPO, KTO). This must be a method that directly uses preference signals.  
+- hyperparameters: Any training hyperparameters mentioned (e.g., learning rate, batch size, temperature, comparison strategy). Leave as "xx" if not specified and JSON-based format if multiple.
+- PEFT: Extract parameter-efficient-tuning-method related attribute (e.g., full-finetuning, LoRA, P-tuning, ...). May be preceded by a dash after preference tuning method (e.g., DPO-LoRA).
+
+If you fail to find numeric results for any method that aligns a language model using preference data, output "<FAILED>".
+If you fail to find a preference tuning method output "<FAILED>".
+Output only the filled templates, with no extra text or explanation
+
+Table LaTeX Source: {{table_code}}
+
+Extracted Results:

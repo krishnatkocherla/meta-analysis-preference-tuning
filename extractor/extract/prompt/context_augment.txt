@@ -1,0 +1,80 @@
+Augment the extracted records from the table's LaTeX source by incorporating additional context from the text source to enrich and complete the records related to preference-based alignment methods.  
+You must output only records associated with preference tuning methods such as Direct Preference Optimization (DPO), Implicit Preference Optimization (IPO), Kahneman-Tversky Optimization (KTO), Relative Preference Optimization (RPO), Generalized Preference Optimization (GPO), Iterative Reasoning Preference Optimization (IRPO), or other methods that directly optimize models based on human preferences.
+
+❗ DO NOT extract or augment records that:
+- Do not contain a valid preference-based tuning method.
+- Use non-preference-based techniques like supervised fine-tuning or reward modeling without comparisons.
+- Only use the model as an evaluator, generator, or judge without aligning it via preference signals.
+
+If no preference tuning method is found, output that specific record as "<FAILED>" (do NOT set "pref_tuning_method": "xx").
+
+==========================
+Enrichment Instructions:
+==========================
+
+Use the following fields to augment extracted records. Search across the table LaTeX source, table caption, and source text to fill in as many fields as possible:
+
+1. value:
+   - Revisit the original table cell to ensure the numeric value is complete.
+   - Ensure it's a valid performance result (e.g., win rate, accuracy, Elo).
+
+2. metric:
+   - Identify the evaluation metric associated with the numeric value (e.g., Accuracy, Elo, Win rate, MT-Bench score).
+
+3. evaluation_method:
+   - Specify the evaluation protocol (e.g., MT-Bench, GPT-4 judge, AlpacaEval, Human Eval).
+
+4. benchmark_or_task:
+   - The broader benchmark or challenge (e.g., MT-Bench, Arena-Hard, AlpacaEval, Open LLM Leaderboard).
+
+5. dataset:
+   - Full name of the dataset used in training or evaluation.
+
+6. dataset_citation_tag:
+   - If a citation is given (e.g., \cite{openai2023gpt4}), return only the tag name (e.g., openai2023gpt4), not LaTeX code.
+
+7. subset:
+   - Identify domains, categories, or subsets like Helpful, Harmless, Instruct, Coding, Reasoning.
+   - Prefer subset inference from table column headers.
+
+8. base_model:
+   - Full name of the pretrained base model being aligned (e.g., LLaMA-2-7B, GPT-J, Mistral, Falcon-7B).
+
+9. pref_tuning_method:
+   - This must be a valid preference-based method (e.g., DPO, KTO, GPO, IPO).
+   - If not found, output "<FAILED>".
+
+10. hyperparameters:
+    - Extract training settings such as learning rate, comparison temperature, batch size, reward shaping, number of comparisons.
+    - Use a JSON-like string if multiple.
+
+11. PEFT:
+    - Parameter-efficient fine-tuning method if any (e.g., full-finetuning, LoRA, QLoRA, P-tuning).
+    - If attached to tuning method (e.g., DPO-LoRA), split accordingly.
+
+==========================
+Output Format:
+==========================
+
+Only output filled templates as shown below (no LaTeX, no extra explanation). Output each augmented record separately.
+If no valid preference tuning method is found, output:
+
+<FAILED>
+
+Otherwise, use this format:
+
+{"value": "xx", "metric": "xx", "evaluation_method": "xx", "benchmark_or_task": "xx", "dataset": "xx", "dataset_citation_tag": "xx", "subset": "xx", "base_model": "xx", "pref_tuning_method": "xx", "hyperparameters": "xx", "PEFT": "xx"}
+
+==========================
+Inputs:
+==========================
+
+Extracted Records: {{records}}  
+Table LaTeX Source: {{table_code}}  
+Text Source: {{text}}  
+
+==========================
+Output:
+==========================
+
+Augmented Extracted Records:
