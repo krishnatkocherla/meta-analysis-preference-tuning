@@ -14,7 +14,7 @@
 TOTAL_SHARDS=1
 SHARD_IDX=$SLURM_ARRAY_TASK_ID
 
-TARGET_MODEL_EXTRACTED_AUGMENTED_FILTERED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/augmented_schema"
+TARGET_MODEL_EXTRACTED_AUGMENTED_FILTERED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/filtered_schema"
 TARGET_MODEL_EXTRACTED_BIBTEX_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/bibtex_ds"
 ARXIV_CITED_DOWNLOAD_PATH="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/arxiv_cited"
 DOWNLOADED_ARXIV_SOURCE_PATH="/srv/nlprx-lab/share6/jpark3272/arxiv_src/ml_domain/"

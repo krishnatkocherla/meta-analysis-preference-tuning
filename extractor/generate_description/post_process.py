@@ -12,7 +12,7 @@ def remove_duplicates(data):
     total_row_strings = []
     for i in range(original_length):
         temp = ""
-        for k in ['dataset_name', 'subset', 'number_of_shots', 'prompting_method', 'metric']:
+        for k in ['dataset_name', 'subset', 'pref_tuning_method', 'hyperparameters', 'metric']:
             temp += data[k][i]
         total_row_strings.append(temp)
 
@@ -52,15 +52,15 @@ def main(args):
     data = {
         'table_source_arxiv_id': dataset['paper_id'],
         'table_source': dataset['table_source'],
-        'dataset_name': dataset['dataset_name'],
+        'dataset_name': [instance['context_augmented_table_results_extracted']['dataset'] for instance in dataset],
         'original_extracted_dictionary': dataset['context_augmented_table_results_extracted'],
         'dataset_reference_arxiv_id': dataset['dataset_link'],
         'dataset_description_source': dataset['description_source'],
         'dataset_description': dataset['dataset_description'],
         'subset': [instance['context_augmented_table_results_extracted']['subset'] for instance in dataset],
-        'model_name': [instance['context_augmented_table_results_extracted']['model_name'] for instance in dataset],
-        'number_of_shots': [instance['context_augmented_table_results_extracted']['number_of_shots'] for instance in dataset],
-        'prompting_method': [instance['context_augmented_table_results_extracted']['prompting_method'] for instance in dataset],
+        'model_name': [instance['context_augmented_table_results_extracted']['base_model'] for instance in dataset],
+        'hyperparameters': [instance['context_augmented_table_results_extracted']['hyperparameters'] for instance in dataset],
+        'pref_tuning_method': [instance['context_augmented_table_results_extracted']['pref_tuning_method'] for instance in dataset],
         'metric': dataset['standardized_metric'],
         'metric_value': dataset['adjusted_metric_value'],
     }
@@ -81,6 +81,10 @@ def main(args):
     for i, metric_name in enumerate(data['metric']):
         if metric_name=='' or metric_name is None or metric_name == "<FAILED>" or metric_name == "xx":
             filter_out_idx.append(i)
+
+    for i, pref_tuning_method in enumerate(data['pref_tuning_method']):
+        if pref_tuning_method=='' or pref_tuning_method is None or pref_tuning_method == "<FAILED>" or pref_tuning_method == "xx":
+            filter_out_idx.append(i)
         
     filtered_data = {}
     for k in data.keys():
@@ -94,9 +98,9 @@ def main(args):
         if 'dataset summary' not in desc.lower() or 'task explanation' not in desc.lower():
             filter_out_idx.append(i)
     
-    for i, prompting_method in enumerate(data['prompting_method']):
-        if 'lora' in prompting_method.lower() or 'ft' in prompting_method.lower() or 'tuning' in prompting_method.lower():
-            filter_out_idx.append(i)
+    # for i, prompting_method in enumerate(data['prompting_method']):
+    #     if 'lora' in prompting_method.lower() or 'ft' in prompting_method.lower() or 'tuning' in prompting_method.lower():
+    #         filter_out_idx.append(i)
 
     filtered_data = {}
     for k in data.keys():
