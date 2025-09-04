@@ -3,22 +3,103 @@ import logging
 import argparse
 import re
 
-import tiktoken
-import openai
-
 from copy import deepcopy
 from datasets import load_from_disk
 
-from api.prompt import call_openai_model, get_tokens_and_price
+import torch
+import transformers
+from datasets import Dataset, load_from_disk
+from datasets import concatenate_datasets, load_dataset
 from extractor.preprocess.tex.process_tex import preprocess_tex_src
 
-tokenizer = tiktoken.get_encoding("o200k_base")
+
+from transformers import BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from vllm import LLM, SamplingParams
+
+from transformers import LogitsProcessor
+
+# https://muellerzr.github.io/til/end_thinking.html
+class ThinkingTokenBudgetProcessor(LogitsProcessor):
+    """
+    A processor where after a maximum number of tokens are generated,
+    a </think> token is added at the end to stop the thinking generation,
+    and then it will continue to generate the response.
+    """
+    def __init__(self, tokenizer, max_thinking_tokens=None):
+        self.tokenizer = tokenizer
+        self.max_thinking_tokens = max_thinking_tokens
+        self.think_end_token = self.tokenizer.encode("</think>", add_special_tokens=False)[0]
+        self.nl_token = self.tokenizer.encode("\n", add_special_tokens=False)[0]
+        self.tokens_generated = 0
+        self.stopped_thinking = False
+        self.neg_inf = float('-inf')
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+        self.tokens_generated += 1
+
+        if (
+            scores is None
+            or scores.numel() == 0
+            or scores.dim() < 2
+            or scores.shape[0] == 0
+            or scores.shape[1] == 0
+        ):
+            return scores  # skip processing if logits are empty or improperly shaped
+
+        if self.max_thinking_tokens == 0 and not self.stopped_thinking and self.tokens_generated > 0:
+            scores[:] = self.neg_inf
+            if self.nl_token < scores.shape[-1]:
+                scores[0][self.nl_token] = 0
+            if self.think_end_token < scores.shape[-1]:
+                scores[0][self.think_end_token] = 0
+            self.stopped_thinking = True
+            return scores
+
+        if self.max_thinking_tokens is not None and not self.stopped_thinking:
+            ratio = self.tokens_generated / self.max_thinking_tokens
+
+            if ratio > 0.95:
+                if self.nl_token < scores.shape[-1] and self.think_end_token < scores.shape[-1]:
+                    boost = 1 + ratio
+                    scores[0][self.nl_token] = scores[0][self.think_end_token] * boost
+                    scores[0][self.think_end_token] = scores[0][self.think_end_token] * boost
+
+            if self.tokens_generated >= (self.max_thinking_tokens - 1):
+                scores[:] = self.neg_inf
+                if self.tokens_generated == self.max_thinking_tokens - 1:
+                    if self.nl_token < scores.shape[-1]:
+                        scores[0][self.nl_token] = 0
+                else:
+                    if self.think_end_token < scores.shape[-1]:
+                        scores[0][self.think_end_token] = 0
+                    self.stopped_thinking = True
+
+        return scores
+
 
 logging.basicConfig(
         level=os.environ.get("LOGLEVEL", "INFO").upper(),
         format="[%(name)s] %(message)s",
         datefmt="[%X]",
 )
+
+def truncate_length(prompt, tokenizer):
+    temp = tokenizer.encode(prompt)
+    if len(temp) > 32768:
+        temp = temp[:32768]
+        truncated_prompt = tokenizer.decode(temp)
+    else:
+        truncated_prompt = prompt
+    return truncated_prompt
+
+def extract_output(qwen_output):
+    # Extract text after </think>
+    if qwen_output.count("<think>")  == 1 and qwen_output.count("</think>") == 0:
+        return "<FAILED>"
+    after_think = qwen_output.split("</think>", 1)[-1].strip()
+    return after_think
+
 
 def clean_arxiv_tex(tex_content):  
     tex_content = re.sub(r'\\appendix.*?\\end{document}', '', tex_content, flags=re.DOTALL)  
@@ -36,33 +117,9 @@ def clean_arxiv_tex(tex_content):
     return tex_content  
 
 
-def truncate_length(prompt_list):
-    new_prompt_list = []
-    for prompt in prompt_list:
-        prompt = prompt.replace("<|endofprompt|>", "")
-        prompt = prompt.replace("<|endoftext|>", "")
-
-        temp = tokenizer.encode(prompt)
-        if len(temp) > 30000:
-            temp = temp[:30000]
-            truncated_prompt = tokenizer.decode(temp)
-        else:
-            truncated_prompt = prompt
-        new_prompt_list.append(truncated_prompt)
-    return new_prompt_list
-
-
 def main(args):
 
     logging.info(args)
-
-    deployment_name = None
-    if args.api_source == 'azure':        
-        openai.api_key = os.getenv("AZURE_OPENAI_KEY")
-        openai.api_base = args.openai_api_base
-        openai.api_type = args.openai_api_type
-        openai.api_version = args.openai_api_verion
-        deployment_name = args.model_name_or_path
         
     dataset = load_from_disk(args.hf_ds_path)
     
@@ -98,10 +155,27 @@ def main(args):
 
     target_dataset_info = list(set(target_dataset_info))
 
+    logging.info("Loading pipeline...")
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
+
+    pipeline = LLM(
+        model=args.model_name_or_path,
+        tokenizer=args.model_name_or_path,
+        dtype="float16",
+        tensor_parallel_size=4,  # Adjust for multi-GPU
+        trust_remote_code=True,
+        download_dir=args.cache_dir
+    )
+    
+    processor = ThinkingTokenBudgetProcessor(tokenizer, max_thinking_tokens=25000)
+    sampling_params = SamplingParams(temperature=0.0, top_p=1.0, max_tokens=32000, logits_processors=[processor])
+
+
     with open(args.prompt_path, 'r') as f:
         prompt_template = f.read()
 
-    prompt_list = []
+    # prompt_list = []
+    results = []
     source_list = []
     for i, (dataset_subset, dataset_description, paper_id, citation_tag) in enumerate(target_dataset_info):
 
@@ -112,8 +186,22 @@ def main(args):
             source_path = os.path.join(citation_source_path, citation_tag)
             source_list.append(citation_tag)
         else:
-            source_path = os.path.join(orig_source_path, paper_id)
+            # Determine the year folder based on first two digits of the paper_id
+            year_prefix = paper_id[:2]
+            if year_prefix == "23":
+                year_folder = "arxiv_src_2023"
+            elif year_prefix == "24":
+                year_folder = "arxiv_src_2024"
+            else:
+                year_folder = ""  # fallback: no year folder, just use orig_source_path
+
+            if year_folder:
+                source_path = os.path.join(orig_source_path, year_folder, paper_id)
+            else:
+                source_path = os.path.join(orig_source_path, paper_id)
+
             source_list.append(paper_id)
+
         
         tex_content = preprocess_tex_src(source_path)
         tex_content = clean_arxiv_tex(tex_content)
@@ -129,18 +217,17 @@ def main(args):
         prompt = prompt.replace("{{dataset}}", dataset_name)
         prompt = prompt.replace("{{subset}}", subset)
         prompt = prompt.replace("{{text_source}}", tex_content)
-        prompt_list.append(prompt)
+        message = [{"role": "user", "content": prompt}]
+        text = tokenizer.apply_chat_template(message, tokenize=False, add_generation_prompt=True, enable_thinking=True)
+        text = truncate_length(text, tokenizer)
+        outputs = pipeline.generate([text], sampling_params)
+        for output in outputs:
+            results.append(extract_output(output.outputs[0].text))
+        # prompt_list.append(prompt)
 
-    prompt_list = truncate_length(prompt_list)
+    # prompt_list = truncate_length(prompt_list)
 
-    assert len(prompt_list) == len(source_list)
-
-    results = call_openai_model(prompt_list, deployment_name, 
-                                temperature=args.temperature, top_p=args.top_p, 
-                                max_tokens=args.max_tokens,
-                                sleep_time=6)
-    
-    get_tokens_and_price(prompt_list, results)
+    assert len(results) == len(source_list)
 
     unique_dataset_subset_to_description = {}
     for i in range(len(target_dataset_info)):
@@ -178,23 +265,16 @@ def main(args):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--api_source', type=str, choices=['azure', 'open_source'], default='azure')
-    parser.add_argument('--backend', type=str, default='gpt-4o')
-    parser.add_argument('--deployment_name', type=str)
-    parser.add_argument('--openai_api_verion', type=str)
-    parser.add_argument('--openai_api_type', type=str)
-    parser.add_argument('--openai_api_base', type=str)
-
     parser.add_argument('--prompt_path', type=str, default='./extractor/generate_description/prompt/extract_description.txt')
-
     parser.add_argument('--hf_ds_path', type=str)
     parser.add_argument('--hf_ds_output_path', type=str)
     parser.add_argument('--orig_source_path', type=str)
     parser.add_argument('--citation_source_path', type=str)
-            
-    parser.add_argument('--temperature', type=float, default=0.01)
-    parser.add_argument('--max_tokens', type=int, default=8192)
-    parser.add_argument('--top_p', type=float, default=1.0)
+    parser.add_argument('--model_name_or_path', type=str, default="Qwen/Qwen3-8B")
+    parser.add_argument('--cache_dir', type=str)
+    parser.add_argument('--shard_idx', type=int, default=0)
+    parser.add_argument('--total_shards', type=int, default=1)
+
     args = parser.parse_args()
     
     logging.info(f"Start Extracting Dataset Descriptions")
