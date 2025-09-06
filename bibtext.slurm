@@ -30,3 +30,5 @@ python extractor/generate_description/get_bibtex_paper.py \
     --hf_ds_output_path $TARGET_MODEL_EXTRACTED_BIBTEX_DS \
     --source_path $DOWNLOADED_ARXIV_SOURCE_PATH \
     --source_save_path $ARXIV_CITED_DOWNLOAD_PATH
+
+    
