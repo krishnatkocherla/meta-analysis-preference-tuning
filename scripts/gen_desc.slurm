@@ -15,8 +15,8 @@ TOTAL_SHARDS=1
 SHARD_IDX=$SLURM_ARRAY_TASK_ID
 
 CACHE_DIR="/srv/nlprx-lab/share6/kkocherla3/.cache/huggingface"
-TARGET_MODEL_EXTRACTED_BIBTEX_CANONICALIZED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/bibtex_ds_2"
-TARGET_MODEL_EXTRACTED_DESCRIPTION_GENERATED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/desc_ds"
+TARGET_MODEL_EXTRACTED_BIBTEX_CANONICALIZED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/databases/bibtex_ds_2"
+TARGET_MODEL_EXTRACTED_DESCRIPTION_GENERATED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/databases/desc_ds"
 
 mkdir -p "$CACHE_DIR"
 mkdir -p "$TARGET_MODEL_EXTRACTED_DESCRIPTION_GENERATED_DS"
