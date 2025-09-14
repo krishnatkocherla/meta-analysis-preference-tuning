@@ -42,21 +42,7 @@ KEYWORDS = [
     # General preference tuning terms
     "preference optimization", "preference tuning",
     "preference-based fine-tuning", "preference learning",
-    "pairwise preference", "pairwise comparisons",
-    "reward model", "reward modeling", "reward predictor",
-    "reward function", "reward signal", "reward dataset",
-    "preference dataset", "preference distribution",
-
-    # Alignment & safety related keywords
-    "alignment tuning", "value alignment",
-    "human alignment", "AI alignment",
-    "safety tuning", "alignment dataset",
-    "helpful harmless honest", "HHH alignment",
-
-    # Misc emerging terms
-    "CPO", "Calibrated Preference Optimization",
-    "PPO with human feedback", "PPO with preferences",
-    "preference distillation", "preference regularization"
+    "pairwise preference", "pairwise comparisons"
 ]
 
 # Build regex patterns for each keyword (looser matching)
