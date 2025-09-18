@@ -9,14 +9,14 @@
 #SBATCH --qos="short"
 #SBATCH --output=logs_%A/extract%a.out
 #SBATCH --error=logs_%A/extract%a.err
-#SBATCH --array=0-1 # total 2 shards, adjust as needed
+#SBATCH --array=0-3 # total 2 shards, adjust as needed
 
-TOTAL_SHARDS=2
+TOTAL_SHARDS=4
 SHARD_IDX=$SLURM_ARRAY_TASK_ID
 
-TARGET_MODEL_LEADERBOARD_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/pref_tables_qwen"
+TARGET_MODEL_LEADERBOARD_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/databases2/pref_tables_qwen"
 CACHE_DIR="/srv/nlprx-lab/share6/kkocherla3/.cache/huggingface"
-TARGET_MODEL_EXTRACTED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/table_schema_think"
+TARGET_MODEL_EXTRACTED_DS="/srv/nlprx-lab/share6/kkocherla3/arxiv_src/databases2/table_schema_think"
 
 mkdir -p "$CACHE_DIR"
 mkdir -p "$TARGET_MODEL_EXTRACTED_DS"
