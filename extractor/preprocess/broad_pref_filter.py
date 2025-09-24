@@ -19,15 +19,20 @@ total_papers = 0
 
 # Expanded keyword list for preference tuning in LLMs
 KEYWORDS = [
-    # Core RLHF methods
+    # RLHF / human feedback methods
     "RLHF", "RLAIF", "RL from human feedback", "RL from AI feedback",
     "reinforcement learning with human feedback",
     "reinforcement learning from human preferences",
     "reinforcement learning from AI preferences",
+    "human preference reinforcement learning",
+    "learning from human feedback", "learning from preferences",
+    "Advantage Weighted Reinforcement Learning from Human Feedback",
+    "AWRHF",
 
-    # Direct Preference Optimization & variants
+    # Direct/Implicit Preference Optimization variants
     "DPO", "Direct Preference Optimization",
     "IPO", "Implicit Preference Optimization",
+    "f-DPO", "f-divergence Direct Preference Optimization",
     "KTO", "Kahneman-Tversky Optimization",
     "ORPO", "Odds Ratio Preference Optimization",
     "SimPO", "Simple Preference Optimization",
@@ -38,11 +43,33 @@ KEYWORDS = [
     "IRPO", "Iterative Reasoning Preference Optimization",
     "SLiC", "SLiC-HF", "Sequence Likelihood Calibration with Human Feedback",
     "GPO", "Generalized Preference Optimization",
+    "Preference-aware fine-tuning", "preference-conditioned fine-tuning",
 
-    # General preference tuning terms
-    "preference optimization", "preference tuning",
-    "preference-based fine-tuning", "preference learning",
-    "pairwise preference", "pairwise comparisons"
+    # Reward modeling / alignment / human evaluation
+    "reward modeling", "reward model", "reward function learning",
+    "preference model", "preference predictor", "preference score model",
+    "human alignment", "AI alignment", "value alignment",
+    "alignment tuning", "safety tuning", "instruction preference",
+    "human evaluation", "feedback-based training", "feedback optimization",
+    "choice modeling", "comparison-based learning",
+
+    # Ranking / contrastive / statistical methods
+    "ranking loss", "pairwise comparison", "pairwise preference",
+    "Bradley-Terry", "Thurstone model", "Plackett-Luce", "rank-based training",
+    "contrastive preference learning", "preference ranking", "ranked outputs",
+    "preference ranking loss", "preference-conditioned generation",
+    "preference-guided learning",
+
+    # Instruction tuning / prompt-based preference
+    "instruction fine-tuning", "instruction-tuned", "prompt preference",
+    "prompt-based preference", "instruction optimization", "prompt optimization",
+    "human-in-the-loop tuning", "interactive preference tuning",
+
+    # General preference optimization terms
+    "preference optimization", "preference tuning", "preference-based fine-tuning",
+    "preference-based RL", "preference learning", "preference-aware training",
+    "ranking-based fine-tuning", "preference signal", "preference supervision",
+    "reward shaping", "policy shaping", "feedback shaping", "guided fine-tuning"
 ]
 
 # Build regex patterns for each keyword (looser matching)
