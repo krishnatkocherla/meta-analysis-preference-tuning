@@ -43,6 +43,8 @@ KEYWORDS = [
     "IRPO", "Iterative Reasoning Preference Optimization",
     "SLiC", "SLiC-HF", "Sequence Likelihood Calibration with Human Feedback",
     "GPO", "Generalized Preference Optimization",
+    "GRPO", "Group Relative Policy Optimization",
+    "PPO", "Proximal Preference Optimization",
     "Preference-aware fine-tuning", "preference-conditioned fine-tuning",
 
     # Reward modeling / alignment / human evaluation
@@ -53,12 +55,12 @@ KEYWORDS = [
     "human evaluation", "feedback-based training", "feedback optimization",
     "choice modeling", "comparison-based learning",
 
-    # Ranking / contrastive / statistical methods
-    "ranking loss", "pairwise comparison", "pairwise preference",
-    "Bradley-Terry", "Thurstone model", "Plackett-Luce", "rank-based training",
-    "contrastive preference learning", "preference ranking", "ranked outputs",
-    "preference ranking loss", "preference-conditioned generation",
-    "preference-guided learning",
+    # # Ranking / contrastive / statistical methods
+    # "ranking loss", "pairwise comparison", "pairwise preference",
+    # "Bradley-Terry", "Thurstone model", "Plackett-Luce", "rank-based training",
+    # "contrastive preference learning", "preference ranking", "ranked outputs",
+    # "preference ranking loss", "preference-conditioned generation",
+    # "preference-guided learning",
 
     # Instruction tuning / prompt-based preference
     "instruction fine-tuning", "instruction-tuned", "prompt preference",

@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --gres=gpu:a40:8
 #SBATCH --mem=512GB
-#SBATCH --qos="short"
+#SBATCH --qos="long"
 #SBATCH --output=logs/filter_pref_tuning_%j.out
 #SBATCH --error=logs/filter_pref_tuning_%j.err
 
