@@ -30,6 +30,7 @@ KEYWORDS = [
     "AWRHF",
 
     # Direct/Implicit Preference Optimization variants
+    "PPO", "Proximal Preference Optimization",
     "DPO", "Direct Preference Optimization",
     "IPO", "Implicit Preference Optimization",
     "f-DPO", "f-divergence Direct Preference Optimization",
@@ -44,7 +45,6 @@ KEYWORDS = [
     "SLiC", "SLiC-HF", "Sequence Likelihood Calibration with Human Feedback",
     "GPO", "Generalized Preference Optimization",
     "GRPO", "Group Relative Policy Optimization",
-    "PPO", "Proximal Preference Optimization",
     "Preference-aware fine-tuning", "preference-conditioned fine-tuning",
 
     # Reward modeling / alignment / human evaluation

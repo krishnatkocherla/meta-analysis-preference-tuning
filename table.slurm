@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --gres=gpu:a40:8
 #SBATCH --mem=512GB
-#SBATCH --qos="short"
+#SBATCH --qos="long"
 #SBATCH --output=logs_%A/table_filter_%a.out
 #SBATCH --error=logs_%A/table_filter_%a.err
 #SBATCH --array=0-7  # total 2 shards, adjust as needed
