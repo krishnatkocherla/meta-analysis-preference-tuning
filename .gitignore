@@ -1,5 +1,5 @@
 *log*
 *slurm*
 *scripts*
-*init*
-*pycache*
+*__init__*
+*__pycache__*
