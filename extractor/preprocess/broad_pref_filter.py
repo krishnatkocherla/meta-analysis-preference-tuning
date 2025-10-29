@@ -55,13 +55,6 @@ KEYWORDS = [
     "human evaluation", "feedback-based training", "feedback optimization",
     "choice modeling", "comparison-based learning",
 
-    # # Ranking / contrastive / statistical methods
-    # "ranking loss", "pairwise comparison", "pairwise preference",
-    # "Bradley-Terry", "Thurstone model", "Plackett-Luce", "rank-based training",
-    # "contrastive preference learning", "preference ranking", "ranked outputs",
-    # "preference ranking loss", "preference-conditioned generation",
-    # "preference-guided learning",
-
     # Instruction tuning / prompt-based preference
     "instruction fine-tuning", "instruction-tuned", "prompt preference",
     "prompt-based preference", "instruction optimization", "prompt optimization",
