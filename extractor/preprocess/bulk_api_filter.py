@@ -4,6 +4,44 @@ from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from dotenv import load_dotenv
+import os
+import hashlib
+
+def _stable_dest(url: str, download_dir: str) -> str:
+    """
+    Create a deterministic filename for a given URL, ensuring uniqueness.
+    """
+    filename = os.path.basename(url)
+    if not filename.endswith(".pdf"):
+        # Use hash to prevent collisions if filename is not clean
+        h = hashlib.md5(url.encode()).hexdigest()[:10]
+        filename = f"{h}.pdf"
+    return os.path.join(download_dir, filename)
+
+def _download_to_path(url: str, download_dir: str, session: Session) -> str:
+    """
+    Download a PDF from the given URL and save it in `download_dir`.
+    Returns the path to the downloaded file.
+    """
+    dest = _stable_dest(url, download_dir)
+    if os.path.exists(dest):
+        logging.info(f"Already exists: {dest}")
+        return dest
+
+    headers = {"User-Agent": "SemanticScholarDownloader/1.0"}
+
+    try:
+        with session.get(url, stream=True, timeout=30, headers=headers) as r:
+            r.raise_for_status()
+            with open(dest, "wb") as f:
+                for chunk in r.iter_content(chunk_size=1 << 14):
+                    if chunk:
+                        f.write(chunk)
+        logging.info(f"Downloaded: {dest}")
+        return dest
+    except Exception as e:
+        logging.error(f"Failed to download {url}: {e}")
+        return None
 
 # https://github.com/allenai/s2-folks/blob/main/examples/Webinar%20Code%20Examples/API_Bulk_Search.py
 
@@ -109,3 +147,8 @@ if __name__ == "__main__":
             break
         logging.info(f"Continuation Token: {token}")
     logging.info(f"Total PDF URLs collected: {len(pdf_urls)}")
+
+    for pdf_url in pdf_urls:
+        download_dir = "../../downloaded_pdfs"
+        os.makedirs(download_dir, exist_ok=True)
+        path = _download_to_path(pdf_url, download_dir, http)
