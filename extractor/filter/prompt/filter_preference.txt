@@ -1,6 +1,2 @@
-Determine if the given Table LaTeX represents a preference tuning table. Preference tuning tables compare different methods for aligning language models with human preferences. Such methods include, but are not limited to: Direct Preference Optimization, Kahneman-Tversky Optimization, Implicit Preference Optimization, Simple Preference Optimization, Generalized Preference Optimization, Sequence Likelihood Calibration for Human Preferences, Iterative Reasoning Preference Optimization, Offline Preference-guided Policy Optimization, Relative Preference Optimization, and Odds Ratio Preference Optimization. Tables are considered preference tuning tables only if their full names or abbreviations refer to preference optimization techniques for large language models, not unrelated uses such as robotics or citations.
+Determine if the given file has atleast one preference tuning table. Preference tuning tables contain one or more methods for aligning language models with human preferences. Tables are considered preference tuning tables only if they refer to preference optimization techniques for large language models, not unrelated uses such as robotics or citations.
 Respond with 'true' if the table represents a preference tuning table, and 'false' otherwise, with no additional explanation.
-
-- Table LaTeX: {Table LaTeX}
-
-Classification Output:
